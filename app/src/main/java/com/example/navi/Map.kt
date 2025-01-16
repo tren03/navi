@@ -18,16 +18,18 @@ class Map : AppCompatActivity() {
         pinOverlay.setImageView(imageView)
 
         // Load the floor plan image
-        imageView.setImage(ImageSource.resource(R.drawable.small_map))
+        imageView.setImage(ImageSource.resource(R.drawable.thirtyfive_map))
 
         // Ensure the pin is set AFTER the image is loaded
         imageView.setOnImageEventListener(object : SubsamplingScaleImageView.OnImageEventListener {
             override fun onReady() {
                 // 🔹 Set pin at (0,0), which is bottom-left corner
-                pinOverlay.setPinLocation(1000f, 1000f)
+                pinOverlay.setPinLocation(250f, 500f)
             }
 
-            override fun onImageLoaded() {}
+            override fun onImageLoaded() {
+                pinOverlay.invalidate()  // Redraw pin when image loads
+            }
             override fun onPreviewLoadError(e: Exception?) {}
             override fun onImageLoadError(e: Exception?) {}
             override fun onTileLoadError(e: Exception?) {}
