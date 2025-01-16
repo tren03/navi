@@ -1,42 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:gravity="center"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".Map">
+    android:layout_height="match_parent">
 
-    <!-- ScrollView for Vertical Scrolling -->
-    <ScrollView
+    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+        android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
-
-        <!-- HorizontalScrollView for Horizontal Scrolling -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <com.jsibbold.zoomage.ZoomageView
-                android:id="@+id/mapImageView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter"
-                android:src="@drawable/thirtyfive_map"
-                app:zoomage_restrictBounds="false"
-                app:zoomage_animateOnReset="true"
-                app:zoomage_autoResetMode="UNDER"
-                app:zoomage_autoCenter="true"
-                app:zoomage_zoomable="true"
-                app:zoomage_translatable="true"
-                app:zoomage_minScale="0.6"
-                app:zoomage_maxScale="8"/>
-
-        </HorizontalScrollView>
-
-    </ScrollView>
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

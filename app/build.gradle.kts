@@ -37,6 +37,7 @@ android {
 
 dependencies {
 
+    implementation(libs.subsampling.scale.image.view.androidx)
     implementation(libs.zoomage)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
