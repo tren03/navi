@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
-                android:src="@drawable/sixty_map"
+                android:src="@drawable/thirtyfive_map"
                 app:zoomage_restrictBounds="false"
                 app:zoomage_animateOnReset="true"
                 app:zoomage_autoResetMode="UNDER"
