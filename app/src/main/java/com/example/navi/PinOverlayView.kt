@@ -12,10 +12,19 @@ class PinOverlayView(context: Context, attrs: AttributeSet?) : View(context, att
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.BLUE
         style = Paint.Style.FILL  // Filled circle (solid dot)
+        strokeWidth = 500f  // Thin grid lines
+    }
+
+    private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.GRAY
+        style = Paint.Style.STROKE
+        strokeWidth = 2f  // Thin grid lines
     }
 
     private var pinPoint: PointF? = null  // Real-world coordinates of the pin
-    private var imageView: SubsamplingScaleImageView? = null  // Reference to SSIV
+    private var imageView: SubsamplingScaleImageView? = null  // Reference to SSIVo
+    private val gridMaxX = 500  // Logical grid max width
+    private val gridMaxY = 500  // Logical grid max height
 
     fun setImageView(imageView: SubsamplingScaleImageView) {
         this.imageView = imageView
@@ -28,6 +37,7 @@ class PinOverlayView(context: Context, attrs: AttributeSet?) : View(context, att
     }
 
     fun mapToSSIVCoordinates(gridX: Float, gridY: Float, gridMaxX: Int, gridMaxY: Int): PointF? {
+
         if (imageView == null || !imageView!!.isReady) {
             Log.e("PinOverlayView", "ImageView is not ready yet")
             return null
@@ -45,6 +55,7 @@ class PinOverlayView(context: Context, attrs: AttributeSet?) : View(context, att
         return imageView!!.sourceToViewCoord(imageX, imageY)
     }
 
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -58,7 +69,7 @@ class PinOverlayView(context: Context, attrs: AttributeSet?) : View(context, att
             return
         }
 
-        val scaledCoords = mapToSSIVCoordinates(pinPoint!!.x, pinPoint!!.y, 500, 500)
+        val scaledCoords = mapToSSIVCoordinates(pinPoint!!.x, pinPoint!!.y, gridMaxX, gridMaxY)
 
         if (scaledCoords == null) {
             Log.e("PinOverlayView", "Mapping to SSIV coordinates failed")
@@ -71,6 +82,6 @@ class PinOverlayView(context: Context, attrs: AttributeSet?) : View(context, att
         Log.d("PinOverlayView", "Drawing blue dot at View coordinates: x=$x, y=$y")
 
         // 🔵 Draw a filled blue circle instead of bitmap
-        canvas.drawCircle(x, y, 10f, paint) // 10f is the radius of the dot
+        canvas.drawCircle(x, y, 15f, paint) // 10f is the radius of the dot
     }
 }
