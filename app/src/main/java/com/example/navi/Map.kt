@@ -7,6 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 class Map : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_map)
+        // setContentView(R.layout.activity_map)
+
+        val customView = CustomCanvasView(this)
+        setContentView(customView) // Set as the main view
     }
 }
