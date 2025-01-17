@@ -7,29 +7,32 @@ import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 
 class Map : AppCompatActivity() {
+    private lateinit var pinOverlay: PinOverlayView
+    private lateinit var pinAnimator: PinAnimator  // Reference to PinAnimator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
         val imageView = findViewById<SubsamplingScaleImageView>(R.id.imageView)
-        val pinOverlay = findViewById<PinOverlayView>(R.id.pinOverlay)
+        pinOverlay = findViewById(R.id.pinOverlay)
 
-        // 🔹 Set ImageView reference before loading image
         pinOverlay.setImageView(imageView)
 
-        // Load the floor plan image
         imageView.setImage(ImageSource.resource(R.drawable.thirtyfive_map))
 
-        // Ensure the pin is set AFTER the image is loaded
+        // Initialize the pin animator
+        pinAnimator = PinAnimator(pinOverlay)
+
         imageView.setOnImageEventListener(object : SubsamplingScaleImageView.OnImageEventListener {
             override fun onReady() {
-                // 🔹 Set pin at (0,0), which is bottom-left corner
-                pinOverlay.setPinLocation(250f, 250f)
+                pinAnimator.startAnimation()  // 🚀 Start pin animation when the image is ready
             }
 
             override fun onImageLoaded() {
                 pinOverlay.invalidate()  // Redraw pin when image loads
             }
+
             override fun onPreviewLoadError(e: Exception?) {}
             override fun onImageLoadError(e: Exception?) {}
             override fun onTileLoadError(e: Exception?) {}
@@ -45,5 +48,10 @@ class Map : AppCompatActivity() {
                 pinOverlay.invalidate()  // Redraw pin when panning
             }
         })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        pinAnimator.stopAnimation() // 🛑 Stop the animation when the activity is destroyed
     }
 }
