@@ -24,7 +24,7 @@ class Map : AppCompatActivity() {
         imageView.setOnImageEventListener(object : SubsamplingScaleImageView.OnImageEventListener {
             override fun onReady() {
                 // 🔹 Set pin at (0,0), which is bottom-left corner
-                pinOverlay.setPinLocation(250f, 500f)
+                pinOverlay.setPinLocation(250f, 250f)
             }
 
             override fun onImageLoaded() {
@@ -34,6 +34,16 @@ class Map : AppCompatActivity() {
             override fun onImageLoadError(e: Exception?) {}
             override fun onTileLoadError(e: Exception?) {}
             override fun onPreviewReleased() {}
+        })
+
+        imageView.setOnStateChangedListener(object : SubsamplingScaleImageView.OnStateChangedListener {
+            override fun onScaleChanged(scaleFactor: Float, origin: Int) {
+                pinOverlay.invalidate()  // Redraw pin when zooming
+            }
+
+            override fun onCenterChanged(newCenter: PointF?, origin: Int) {
+                pinOverlay.invalidate()  // Redraw pin when panning
+            }
         })
     }
 }

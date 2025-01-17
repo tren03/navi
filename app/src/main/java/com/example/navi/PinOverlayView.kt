@@ -9,18 +9,13 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 
 class PinOverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private var pinBitmap: Bitmap? = null
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.BLUE
+        style = Paint.Style.FILL  // Filled circle (solid dot)
+    }
+
     private var pinPoint: PointF? = null  // Real-world coordinates of the pin
     private var imageView: SubsamplingScaleImageView? = null  // Reference to SSIV
-
-    init {
-        // Load the pin image from drawable (Ensure this exists in res/drawable/)
-        pinBitmap = BitmapFactory.decodeResource(resources, R.drawable.blue_dot_small)
-    }
-
-    fun givePixelValue(realX:Float,realY:Float){
-    }
 
     fun setImageView(imageView: SubsamplingScaleImageView) {
         this.imageView = imageView
@@ -38,43 +33,23 @@ class PinOverlayView(context: Context, attrs: AttributeSet?) : View(context, att
             return null
         }
 
-        // 🔹 Step 1: Get actual image dimensions in pixels
         val imageWidth = imageView!!.sWidth.toFloat()
         val imageHeight = imageView!!.sHeight.toFloat()
 
-        Log.d("PinOverlayView", "Image Size: Width=$imageWidth, Height=$imageHeight")
-
-        // 🔹 Step 2: Compute scale factor for non-square grid
         val scaleX = imageWidth / gridMaxX  // Scale factor for X
         val scaleY = imageHeight / gridMaxY // Scale factor for Y
 
-        Log.d("PinOverlayView", "Scale Factors: scaleX=$scaleX, scaleY=$scaleY")
-
-        // 🔹 Step 3: Convert grid coordinates to image coordinates
         val imageX = gridX * scaleX
         val imageY = gridY * scaleY
 
-        Log.d("PinOverlayView", "Grid to Image: gridX=$gridX, gridY=$gridY → imageX=$imageX, imageY=$imageY")
-
-        // 🔹 Step 4: Convert image space coordinates to view space (SSIV coordinates)
-        val viewCoord = imageView!!.sourceToViewCoord(imageX, imageY)
-
-        if (viewCoord == null) {
-            Log.e("PinOverlayView", "sourceToViewCoord returned null")
-            return null
-        }
-
-        Log.d("PinOverlayView", "Image to View: imageX=$imageX, imageY=$imageY → viewX=${viewCoord.x}, viewY=${viewCoord.y}")
-
-        return viewCoord
+        return imageView!!.sourceToViewCoord(imageX, imageY)
     }
-
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        if (imageView == null || pinPoint == null || pinBitmap == null) {
-            Log.e("PinOverlayView", "Missing required data: imageView or pinPoint or pinBitmap is null")
+        if (imageView == null || pinPoint == null) {
+            Log.e("PinOverlayView", "Missing required data: imageView or pinPoint is null")
             return
         }
 
@@ -83,29 +58,19 @@ class PinOverlayView(context: Context, attrs: AttributeSet?) : View(context, att
             return
         }
 
-        // Convert real-world coordinates to view coordinates
-        val imageSize = imageView!!.sWidth to imageView!!.sHeight // Image dimensions
-        Log.d("PinOverlayView","IMG SIZE WIDTH : ${imageSize.first} HEIGHT : ${imageSize.second}")
+        val scaledCoords = mapToSSIVCoordinates(pinPoint!!.x, pinPoint!!.y, 500, 500)
 
-        val scaledCoords = mapToSSIVCoordinates(pinPoint!!.x,pinPoint!!.y,500,500)
-        Log.d("PinOverlayView","scaled coords : ${scaledCoords}")
-
-        val viewCoord = imageView!!.sourceToViewCoord(pinPoint!!.x, pinPoint!!.y)
-        Log.d("PinOverlayView","VIEW COORD X : ${viewCoord!!.x} Y : ${viewCoord!!.y}")
-
-
-        if (viewCoord == null) {
-            Log.e("PinOverlayView", "sourceToViewCoord returned null")
+        if (scaledCoords == null) {
+            Log.e("PinOverlayView", "Mapping to SSIV coordinates failed")
             return
         }
 
-        //val x = viewCoord.x - (pinBitmap!!.width/2)
-        //val y = viewCoord.y - pinBitmap!!.height
+        val x = scaledCoords.x
+        val y = scaledCoords.y
 
-        val x = scaledCoords!!.x - (pinBitmap!!.width/2)
-        val y = scaledCoords!!.y - pinBitmap!!.height
+        Log.d("PinOverlayView", "Drawing blue dot at View coordinates: x=$x, y=$y")
 
-        Log.d("PinOverlayView", "Drawing pin at View coordinates: x=$x, y=$y")
-        canvas.drawBitmap(pinBitmap!!, x, y, paint)
+        // 🔵 Draw a filled blue circle instead of bitmap
+        canvas.drawCircle(x, y, 10f, paint) // 10f is the radius of the dot
     }
 }
