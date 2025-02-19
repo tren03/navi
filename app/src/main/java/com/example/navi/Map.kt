@@ -1,57 +1,68 @@
 package com.example.navi
 
-import android.graphics.PointF
+import android.graphics.*
 import android.os.Bundle
+import android.util.Log
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import com.davemorrissey.labs.subscaleview.ImageSource
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 
 class Map : AppCompatActivity() {
-    private lateinit var pinOverlay: PinOverlayView
-    private lateinit var pinAnimator: PinAnimator  // Reference to PinAnimator
+
+    // Define your "logical" map dimensions
+    private val logicalWidth = 251f
+    private val logicalHeight = 390f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
-        val imageView = findViewById<SubsamplingScaleImageView>(R.id.imageView)
-        pinOverlay = findViewById(R.id.pinOverlay)
+        val imageView: ImageView = findViewById(R.id.imageView)
+        val mapOverlay: PinOverlayView = findViewById(R.id.mapOverlay)
 
-        pinOverlay.setImageView(imageView)
+        // Load your floor plan image (actual size = 2519x3901 in pixels)
+        imageView.setImageResource(R.drawable.map_image)
 
-        imageView.setImage(ImageSource.resource(R.drawable.thirtyfive_map))
+        imageView.post {
+            // 1) Get the actual on-screen bounds (after scaling/fitting)
+            val drawable = imageView.drawable ?: return@post
+            val matrix = imageView.imageMatrix
+            val values = FloatArray(9)
+            matrix.getValues(values)
 
-        // Initialize the pin animator
-        pinAnimator = PinAnimator(pinOverlay)
+            val scaleX = values[Matrix.MSCALE_X]
+            val scaleY = values[Matrix.MSCALE_Y]
+            val transX = values[Matrix.MTRANS_X]
+            val transY = values[Matrix.MTRANS_Y]
 
-        imageView.setOnImageEventListener(object : SubsamplingScaleImageView.OnImageEventListener {
-            override fun onReady() {
-                pinAnimator.startAnimation()  // 🚀 Start pin animation when the image is ready
-            }
+            // The displayed rectangle of the image on the screen
+            val intrinsicWidth = drawable.intrinsicWidth.toFloat()
+            val intrinsicHeight = drawable.intrinsicHeight.toFloat()
+            val imageBounds = RectF(
+                transX,
+                transY,
+                transX + intrinsicWidth * scaleX,
+                transY + intrinsicHeight * scaleY
+            )
 
-            override fun onImageLoaded() {
-                pinOverlay.invalidate()  // Redraw pin when image loads
-            }
+            // Pass to overlay if needed
+            mapOverlay.setImageBounds(imageBounds)
 
-            override fun onPreviewLoadError(e: Exception?) {}
-            override fun onImageLoadError(e: Exception?) {}
-            override fun onTileLoadError(e: Exception?) {}
-            override fun onPreviewReleased() {}
-        })
+            Log.d("MapDebug", "Image Bounds: $imageBounds")
 
-        imageView.setOnStateChangedListener(object : SubsamplingScaleImageView.OnStateChangedListener {
-            override fun onScaleChanged(scaleFactor: Float, origin: Int) {
-                pinOverlay.invalidate()  // Redraw pin when zooming
-            }
+            // 2) Suppose the user wants to plot a point at the new "logical" coords:
+            //    (251, 390) => bottom-right in your 251×390 space
+            //    or (125.5, 195.5) => near the center
+            val logicalX = 125.5f
+            val logicalY = 195.5f
 
-            override fun onCenterChanged(newCenter: PointF?, origin: Int) {
-                pinOverlay.invalidate()  // Redraw pin when panning
-            }
-        })
-    }
+            // 3) Convert from logical coords [0..251, 0..390] to on-screen coords
+            val mappedX = imageBounds.left + (logicalX / logicalWidth) * imageBounds.width()
+            val mappedY = imageBounds.top + (logicalY / logicalHeight) * imageBounds.height()
 
-    override fun onDestroy() {
-        super.onDestroy()
-        pinAnimator.stopAnimation() // 🛑 Stop the animation when the activity is destroyed
+            Log.d("MapDebug", "Logical ($logicalX, $logicalY) -> Screen ($mappedX, $mappedY)")
+
+            // 4) Plot a marker at that screen coordinate
+            mapOverlay.addMarker(mappedX, mappedY)
+        }
     }
 }
